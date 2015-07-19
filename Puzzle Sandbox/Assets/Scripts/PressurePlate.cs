@@ -1,13 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
+using AssemblyCSharp;
 
 public class PressurePlate : MonoBehaviour {
-	BoxCollider collide;
+	public GameObject target;
+
 	Renderer rend;
+	IOpenable targetTrigger;
 
 	void Awake(){
-		collide = GetComponent<BoxCollider>();
 		rend = GetComponent<Renderer>();
+		targetTrigger = target.GetComponent<IOpenable>();
 	}
 	// Use this for initialization
 	void Start () {
@@ -24,6 +27,10 @@ public class PressurePlate : MonoBehaviour {
 		var color = rend.material.color;
 		color.r += 40;
 		rend.material.color = color;
+
+		if(targetTrigger != null){
+			targetTrigger.Open();
+		}
 	}
 		
 		
@@ -32,5 +39,9 @@ public class PressurePlate : MonoBehaviour {
 		var color = rend.material.color;
 		color.r -= 40;
 		rend.material.color = color;
+
+		if(targetTrigger != null){
+			targetTrigger.Close();
+		}
 	}
 }
