@@ -29,6 +29,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 		CapsuleCollider m_Capsule;
 		bool m_Crouching;
 
+		Rigidbody m_GrabRigidbody;
 
 		void Start()
 		{
@@ -61,7 +62,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 			// control and velocity handling is different when grounded and airborne:
 			if (m_IsGrounded)
 			{
-				HandleGroundedMovement(crouch, jump);
+				if(m_GrabRigidbody != null){
+					HandleGrabMovement(crouch, jump);
+				}else{
+					HandleGroundedMovement(crouch, jump);
+				}
 			}
 			else
 			{
@@ -73,6 +78,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
 			// send input and other state parameters to the animator
 			UpdateAnimator(move);
+		}
+
+		public void Grab(Rigidbody grabRigidbody){
+			m_GrabRigidbody = grabRigidbody;
+		}
+		public void Drop(){
+			m_GrabRigidbody.freezeRotation = false;
+			m_GrabRigidbody = null;
 		}
 
 
@@ -176,6 +189,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 			}
 		}
 
+		void HandleGrabMovement(bool crouch, bool jump)
+		{
+
+		}
+		
 		void ApplyExtraTurnRotation()
 		{
 			// help the character turn faster (this is in addition to root rotation in the animation)
@@ -195,6 +213,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 				// we preserve the existing y part of the current velocity.
 				v.y = m_Rigidbody.velocity.y;
 				m_Rigidbody.velocity = v;
+
+				if(m_GrabRigidbody != null){
+					Quaternion target = 
+						Quaternion.Euler(
+							m_GrabRigidbody.rotation.eulerAngles.x, 
+							Mathf.Round (m_GrabRigidbody.rotation.eulerAngles.y / 90) * 90,
+							m_GrabRigidbody.rotation.eulerAngles.z 
+						);
+					m_GrabRigidbody.rotation = Quaternion.Slerp(m_GrabRigidbody.rotation, target, Time.deltaTime * 3f);
+
+					m_GrabRigidbody.freezeRotation = true;
+
+					m_GrabRigidbody.velocity = v;
+				}
 			}
 		}
 

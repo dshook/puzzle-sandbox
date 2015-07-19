@@ -14,6 +14,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         private Vector3 m_Move;
         private bool m_Jump;                      // the world-relative desired move direction, calculated from the camForward and user input.
 
+		private bool m_Grabbing;
         
         private void Start()
         {
@@ -40,6 +41,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
             }
+			if(!m_Grabbing && CrossPlatformInputManager.GetButtonDown("Grab")){
+				TryGrab();
+			}
+			if(m_Grabbing && CrossPlatformInputManager.GetButtonUp("Grab")){
+				m_Grabbing = false;
+				m_Character.Drop();
+			}
         }
 
 
@@ -72,5 +80,17 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Character.Move(m_Move, crouch, m_Jump);
             m_Jump = false;
         }
+
+		private void TryGrab(){
+			RaycastHit objectHit;
+			// 0.1f is a small offset to start the ray from inside the character
+			// it is also good to note that the transform position in the sample assets is at the base of the character
+			if(Physics.Raycast(transform.position + (Vector3.up * 0.1f), transform.forward, out objectHit, 1f)){
+				if(objectHit.rigidbody != null){
+					m_Grabbing = true;
+					m_Character.Grab(objectHit.rigidbody);
+				}
+			}
+		}
     }
 }
